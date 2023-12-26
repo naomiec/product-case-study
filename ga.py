@@ -2,7 +2,7 @@ NUM_PEOPLE = 20  # Total number of people available
 NUM_ROLES = 3  # Three roles: New Business Acquisition, Account Management, Support
 NUM_MONTHS = 24  # Duration of 24 months
 BASE_CSAT = 0.70  # Base CSAT score
-CHURN_RATE = 0.20  # Churn rate
+CHURN_RATE = 0.10  # Churn rate
 
 # A chromosome is a 2D array where each row represents a month and each column a role.
 # The values in the array are the number of people in each role for that month.

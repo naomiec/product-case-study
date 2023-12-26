@@ -7,7 +7,7 @@ MONTHS = 24  # Total months
 NEW_BUSINESS_NEW_CUSTOMERS = 5  # New customers per New Business agent
 ACCOUNT_MANAGEMENT_GROWTH = 0.20  # Revenue growth per Account Management agent
 SUPPORT_CHURN_REDUCTION = 0.01  # Churn rate reduction per Support agent
-BASE_CHURN_RATE = 0.20  # Base churn rate
+CHURN_RATE = 0.10  # Base churn rate
 ORGANIC_GROWTH = 25  # Organic customer growth per month
 BASE_CSAT = 0.70  # Base CSAT score
 
@@ -36,7 +36,7 @@ def calculate_revenue(state):
         # Support: Churn Rate Reduction
         csat_increase = BASE_CSAT + S * 0.01  
         churn_rate_reduction = csat_increase * 0.15
-        effective_churn_rate = max(BASE_CHURN_RATE - churn_rate_reduction, 0)
+        effective_churn_rate = max(CHURN_RATE - churn_rate_reduction, 0)
         churned_customers = int(customers * effective_churn_rate)
         customers -= churned_customers
         am_duration = am_duration[:-churned_customers] if churned_customers else am_duration
