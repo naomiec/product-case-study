@@ -10,6 +10,7 @@ SUPPORT_CHURN_REDUCTION = 0.01  # Churn rate reduction per Support agent
 CHURN_RATE = 0.10  # Base churn rate
 ORGANIC_GROWTH = 25  # Organic customer growth per month
 BASE_CSAT = 0.70  # Base CSAT score
+COMPOUNDING_MONTHS_MAX = 6  # Maximum number of months for compounding
 
 def generate_initial_state():
     # Specific allocation for each month: 7 New Business, 7 Account Management, 6 Support
@@ -30,7 +31,7 @@ def calculate_revenue(state):
 
         # Calculate new customers and update the customer base
         new_customers = N * 5
-        customers += 25 + new_customers  
+        customers += ORGANIC_GROWTH + new_customers  
         am_duration.extend([0] * new_customers)  
 
         # Support: Churn Rate Reduction
@@ -47,7 +48,7 @@ def calculate_revenue(state):
 
         # Update AM duration for each customer
         for i in range(min(total_AM_customers, len(am_duration))):
-            am_duration[i] = min(am_duration[i] + 1, 6) 
+            am_duration[i] = min(am_duration[i] + 1, COMPOUNDING_MONTHS_MAX) 
 
         # Calculate revenue for the month
         am_revenue = sum([base_payment * (1 + 0.20) ** duration for duration in am_duration[:total_AM_customers]])

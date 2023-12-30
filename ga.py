@@ -3,6 +3,11 @@ NUM_ROLES = 3  # Three roles: New Business Acquisition, Account Management, Supp
 NUM_MONTHS = 24  # Duration of 24 months
 BASE_CSAT = 0.70  # Base CSAT score
 CHURN_RATE = 0.10  # Churn rate
+COMPOUNDING_MONTHS_MAX = 6  # Maximum number of months for compounding
+CSAT_INCREASE = 0.01  # CSAT increase per Support person
+CUSTOMER_LOAD = 25  # Maximum number of customers per Account Manager
+RELATIVE_CHURN_DECREASE = 0.15  # Relative churn decrease per Support person
+COMPOUNDING_PERCENTAGE = 0.20  # Percentage increase in revenue per month under Account Management
 
 # A chromosome is a 2D array where each row represents a month and each column a role.
 # The values in the array are the number of people in each role for that month.
@@ -36,28 +41,27 @@ def fitness_function(state):
         # Calculate new customers and update the customer base
         new_customers = N * 5
         new_customers = int(new_customers)
-        customers += 25 + new_customers  
+        customers += CUSTOMER_LOAD + new_customers  
         am_duration.extend([0] * new_customers)  
 
         # Support: Churn Rate Reduction
-        csat_increase = BASE_CSAT + S * 0.01  
-        churn_rate_reduction = csat_increase * 0.15
+        csat_increase = BASE_CSAT + S * CSAT_INCREASE 
+        churn_rate_reduction = csat_increase * RELATIVE_CHURN_DECREASE
         effective_churn_rate = max(CHURN_RATE - churn_rate_reduction, 0)
         churned_customers = int(customers * effective_churn_rate)
         customers -= churned_customers
         am_duration = am_duration[:-churned_customers] if churned_customers else am_duration
 
         # Account Management: Revenue Increase
-        max_customers_per_AM = 25
-        total_AM_customers = min(A * max_customers_per_AM, customers)
+        total_AM_customers = min(A * CUSTOMER_LOAD, customers)
         total_AM_customers = int(total_AM_customers)
 
         # Update AM duration for each customer
         for i in range(min(total_AM_customers, len(am_duration))):
-            am_duration[i] = min(am_duration[i] + 1, 6)
+            am_duration[i] = min(am_duration[i] + 1, COMPOUNDING_MONTHS_MAX)
 
         # Calculate revenue for the month
-        am_revenue = sum([base_payment * (1 + 0.20) ** duration for duration in am_duration[:total_AM_customers]])
+        am_revenue = sum([base_payment * (1 + COMPOUNDING_PERCENTAGE) ** duration for duration in am_duration[:total_AM_customers]])
         non_am_revenue = (customers - total_AM_customers) * base_payment
         monthly_revenue = am_revenue + non_am_revenue
         total_revenue += monthly_revenue
@@ -89,9 +93,9 @@ def crossover(parent1, parent2):
             offspring[i] = parent2[i]
 
         # Adjustment step: Ensure the total remains 20
-        while np.sum(offspring[i]) != 20:
-            deficit = 20 - np.sum(offspring[i])
-            roles_to_adjust = np.where(offspring[i] < (20 - deficit))[0]
+        while np.sum(offspring[i]) != NUM_PEOPLE:
+            deficit = NUM_PEOPLE - np.sum(offspring[i])
+            roles_to_adjust = np.where(offspring[i] < (NUM_PEOPLE - deficit))[0]
             if roles_to_adjust.size > 0:
                 selected_role = random.choice(roles_to_adjust)
                 offspring[i][selected_role] += np.sign(deficit)
@@ -102,7 +106,7 @@ def crossover(parent1, parent2):
 
 
 def mutation(chromosome, mutation_rate=0.05):
-    num_people = 20  # Total number of people available
+    num_people = NUM_PEOPLE  # Total number of people available
     num_roles = 3    # Number of roles
 
     for month in chromosome:
